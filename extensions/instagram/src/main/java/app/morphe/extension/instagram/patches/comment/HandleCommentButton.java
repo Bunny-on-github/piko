@@ -26,9 +26,6 @@ import app.morphe.extension.instagram.entity.UserData;
 import app.morphe.extension.instagram.utils.Pref;
 import app.morphe.extension.instagram.constants.Constants;
 import app.morphe.extension.instagram.patches.download.DownloadUtils;
-import app.morphe.extension.instagram.patches.comment.copyTextButton.CopyTextButton;
-import app.morphe.extension.instagram.patches.comment.copyTextButton.CopyUsernameButton;
-import app.morphe.extension.instagram.patches.comment.debugButton.DebugButton;
 import app.morphe.extension.instagram.patches.comment.saveMediaButton.SaveMediaButton;
 
 // Thanks to MyInsta.
@@ -39,21 +36,8 @@ public class HandleCommentButton {
         try {
             CommentData commentData = new CommentData(commentObject);
 
-            if (Pref.pikoDebug()) {
-                list.add(DebugButton.A00);
-            }
-            if (commentData.hasText() && Pref.commentCopyButton()) {
-                list.add(CopyTextButton.A00);
-            }
             if(commentData.hasMedia() && Pref.commentSaveMediaButton()){
                 list.add(SaveMediaButton.A00);
-            }
-            if (Pref.commentCopyButton()) {
-                UserData userData = commentData.getCommentUserData();
-                String username = userData != null ? userData.getUsername() : null;
-                if (username != null && !username.isEmpty()) {
-                    list.add(CopyUsernameButton.A00);
-                }
             }
         } catch (Exception e) {
             PikoUtils.logger(e);
@@ -67,56 +51,26 @@ public class HandleCommentButton {
             if (list.isEmpty()) return false;
             Object commentObject = list.get(0);
 
-            if (button.equals(CopyTextButton.A00)) {
+            if (button.equals(SaveMediaButton.A00)) {
                 CommentData commentData = new CommentData(commentObject);
-                if (commentData.hasText()) {
-                    String commentText = (String) commentData.getText();
-                    app.morphe.extension.shared.Utils.setClipboard(commentText);
-                    PikoUtils.toast(str("piko_comment_copied_success"));
-                } else {
-                    PikoUtils.toast(str("piko_comment_copied_failed"));
+
+                Context context = Utils.getContext();
+                if (commentData.hasGifMedia()) {
+                    String gifUrl = commentData.getGifUrl();
+                    String fileName = commentData.getGifDownloadName();
+                    DownloadUtils.downloadMediaUrl(context, gifUrl, Constants.DEFAULT_GIF_FOLDER, fileName);
+                } else if (commentData.hasImageMedia()) {
+                    MediaData imageData = commentData.getImageMedia();
+                    UserData userData = commentData.getCommentUserData();
+
+                    String userName = (userData != null) ? userData.getUsername() : "comment_"+LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                    String mediaLink = imageData.getMediaLink();
+                    String fileName = userName + "_" + imageData.getDownloadFilename(MediaType.ANY);
+
+                    String subFolder = DownloadUtils.getSubfolderName(userName);
+
+                    DownloadUtils.downloadMediaUrl(context, mediaLink, subFolder, fileName);
                 }
-                return true;
-
-            } else if (button.equals(CopyUsernameButton.A00)) {
-                CommentData commentData = new CommentData(commentObject);
-                UserData userData = commentData.getCommentUserData();
-                String username = userData != null ? userData.getUsername() : null;
-                if (username != null && !username.isEmpty()) {
-                    Utils.setClipboard(username);
-                    PikoUtils.toast(str("piko_copied"));
-                } else {
-                    PikoUtils.toast(str("piko_comment_copied_failed"));
-                }
-                return true;
-
-            } else if (button.equals(DebugButton.A00)) {
-                CommentData commentData = new CommentData(commentObject);
-
-                Context context = (Context) Utils.getActivity();
-                ObjectBrowser.browseObject(context,commentData);
-                return true;
-
-            } else if (button.equals(SaveMediaButton.A00)) {
-                    CommentData commentData = new CommentData(commentObject);
-
-                    Context context = Utils.getContext();
-                    if (commentData.hasGifMedia()) {
-                        String gifUrl = commentData.getGifUrl();
-                        String fileName = commentData.getGifDownloadName();
-                        DownloadUtils.downloadMediaUrl(context, gifUrl, Constants.DEFAULT_GIF_FOLDER, fileName);
-                    } else if (commentData.hasImageMedia()) {
-                        MediaData imageData = commentData.getImageMedia();
-                        UserData userData = commentData.getCommentUserData();
-
-                        String userName = (userData != null) ? userData.getUsername() : "comment_"+LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-                        String mediaLink = imageData.getMediaLink();
-                        String fileName = userName + "_" + imageData.getDownloadFilename(MediaType.ANY);
-
-                        String subFolder = DownloadUtils.getSubfolderName(userName);
-
-                        DownloadUtils.downloadMediaUrl(context, mediaLink, subFolder, fileName);
-                    }
                 
                 return true;
             }

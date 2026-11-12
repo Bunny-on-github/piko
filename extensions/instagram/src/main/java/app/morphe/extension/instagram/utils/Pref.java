@@ -21,11 +21,9 @@ import app.morphe.extension.instagram.settings.Settings;
 import static app.morphe.extension.instagram.settings.RestartPolicy.NOT_REQUIRED;
 import app.morphe.extension.instagram.settings.SettingsStatus;
 import app.morphe.extension.instagram.constants.Constants;
-import app.morphe.extension.instagram.patches.focusLock.FocusLock;
 import app.morphe.extension.instagram.patches.download.ReelDownload;
 
 import app.morphe.extension.crimera.sharedPreference.SharedPref;
-import app.morphe.extension.shared.MarkChatAsReadScope;
 
 @SuppressWarnings("unused")
 public class Pref {
@@ -43,8 +41,6 @@ public class Pref {
     }
 
     public static boolean clearAllPreferences() {
-        // Resetting settings would silently drop an active Focus Lock.
-        if (FocusLock.isActive()) return false;
         return SharedPref.clearAll();
     }
     
@@ -134,9 +130,6 @@ public class Pref {
             boolean allGhostModes,
             boolean explicitReadEnabled
     ) {
-        if (explicitReadEnabled && MarkChatAsReadScope.isActive()) {
-            return false;
-        }
         return viewDmAnonymously || allGhostModes;
     }
 
@@ -197,64 +190,8 @@ public class Pref {
         return lockable(Settings.DISABLE_SWIPE_TO_CREATE) && SettingsStatus.disableSwipeToCreate;
     }
 
-    /**
-     * A switch that Focus Lock can hold on: the stored value, or true while the lock forces it.
-     *
-     * Read per call rather than cached, so a lock that expires releases the setting without
-     * needing a restart.
-     */
     private static boolean lockable(BooleanSetting setting) {
-        return SharedPref.getBooleanPref(setting) || FocusLock.isForced(setting);
-    }
-
-    /** Whether the target behind {@code key} is one of the things Focus Lock holds on. */
-    public static boolean focusLockSelected(String key) {
-        return SharedPref.getBooleanPref(focusLockSelection(key));
-    }
-
-    public static BooleanSetting focusLockSelection(String key) {
-        return new BooleanSetting(FocusLock.SELECTION_PREFIX + key, false, NOT_REQUIRED);
-    }
-
-    public static String focusLockDurationMinutes() {
-        return SharedPref.getStringPref(Settings.FOCUS_LOCK_DURATION_MINUTES);
-    }
-
-    public static boolean setFocusLockDurationMinutes(String value) {
-        return SharedPref.setStringPref(Settings.FOCUS_LOCK_DURATION_MINUTES.key, value);
-    }
-
-    /** Keys of the first released Focus Lock, read so a lock it wrote still counts. */
-    public static boolean legacyFocusLockBlockReels() {
-        return SharedPref.getBooleanPref(new BooleanSetting("focus_lock_block_reels", false, NOT_REQUIRED));
-    }
-
-    public static boolean legacyFocusLockBlockExplore() {
-        return SharedPref.getBooleanPref(new BooleanSetting("focus_lock_block_explore", false, NOT_REQUIRED));
-    }
-
-    public static String focusLockFormat() {
-        return SharedPref.getStringPref(Settings.FOCUS_LOCK_FORMAT);
-    }
-
-    public static boolean setFocusLockFormat(String value) {
-        return SharedPref.setStringPref(Settings.FOCUS_LOCK_FORMAT.key, value);
-    }
-
-    public static String focusLockUntil() {
-        return SharedPref.getStringPref(Settings.FOCUS_LOCK_UNTIL);
-    }
-
-    public static boolean setFocusLockUntil(String value) {
-        return SharedPref.setStringPref(Settings.FOCUS_LOCK_UNTIL.key, value);
-    }
-
-    public static String focusLockUnlockRequestedAt() {
-        return SharedPref.getStringPref(Settings.FOCUS_LOCK_UNLOCK_REQUESTED_AT);
-    }
-
-    public static boolean setFocusLockUnlockRequestedAt(String value) {
-        return SharedPref.setStringPref(Settings.FOCUS_LOCK_UNLOCK_REQUESTED_AT.key, value);
+        return SharedPref.getBooleanPref(setting);
     }
 
     public static boolean ephemeralMediaCaption() {
@@ -595,27 +532,4 @@ public class Pref {
         return Integer.valueOf(SharedPref.getStringPref(Settings.FILTER_STORY_MAX_STORY_ITEMS));
     }
 
-    public static boolean inboxLock() {
-        return SharedPref.getBooleanPref(Settings.INBOX_LOCK);
-    }
-
-    public static boolean inboxLockNotifications() {
-        return SharedPref.getBooleanPref(Settings.INBOX_LOCK_NOTIFICATIONS);
-    }
-
-    public static boolean hiddenChats() {
-        return SharedPref.getBooleanPref(Settings.HIDDEN_CHATS);
-    }
-
-    public static boolean hiddenChatsMute() {
-        return SharedPref.getBooleanPref(Settings.HIDDEN_CHATS_MUTE);
-    }
-
-    public static int hiddenChatsTaps() {
-        try {
-            return Integer.parseInt(SharedPref.getStringPref(Settings.HIDDEN_CHATS_TAPS));
-        } catch (NumberFormatException e) {
-            return 3;
-        }
-    }
 }

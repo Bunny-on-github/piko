@@ -2,6 +2,7 @@ package app.crimera.patches.instagram.misc.reels
 
 import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
 import app.crimera.patches.instagram.utils.Constants.PREF_CALL_DESCRIPTOR
+import app.crimera.patches.instagram.utils.Constants.SCROLL_BLOCKER_DESCRIPTOR
 import app.crimera.patches.instagram.utils.enableSettings
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
@@ -19,9 +20,8 @@ private object ClipsSwipeRefreshLayoutOnInterceptTouchEventFingerprint : Fingerp
 
 @Suppress("unused")
 val disableReelsScrollingPatch = patch(
-    name = "Disable Reels scrolling",
-    description = "Disables the endless scrolling behavior in Instagram Reels, preventing swiping to the next Reel. " +
-            "Note: On a clean install, the 'Tip' animation may appear but will stop on its own after a few seconds."
+    name = "Disable Reels and Feed swipe navigation",
+    description = "Disables vertical swipe navigation between consecutive Reels and Feed/Explore items, preventing swiping to the next item while preserving screen controls, chat interactions, media playback, and back navigation."
 ) {
     compatibleWith(COMPATIBILITY_INSTAGRAM)
 
@@ -30,7 +30,7 @@ val disableReelsScrollingPatch = patch(
             it.type == "Landroidx/viewpager2/widget/ViewPager2;"
         }
 
-        // Disable user input on the ViewPager2 to prevent scrolling.
+        // Disable user input on the ViewPager2 to prevent scrolling across Reels, Explore clips, and chat-shared Reels.
         ClipsViewPagerImplGetViewAtIndexFingerprint.method.addInstructions(
             0,
             """
@@ -40,6 +40,7 @@ val disableReelsScrollingPatch = patch(
                 iget-object v0, p0, $viewPagerField
                 const/4 v1, 0x0
                 invoke-virtual { v0, v1 }, Landroidx/viewpager2/widget/ViewPager2;->setUserInputEnabled(Z)V
+                invoke-static { v0 }, $SCROLL_BLOCKER_DESCRIPTOR->blockViewPager(Ljava/lang/Object;)V
                 :piko
                 nop
             """

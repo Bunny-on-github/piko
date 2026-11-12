@@ -52,13 +52,7 @@ object Constants {
     const val PREF_CALL_DESCRIPTOR = "invoke-static {}, $PREF_DESCRIPTOR"
 
     const val PATCHES_DESCRIPTOR = "$INTEGRATIONS_PACKAGE/patches"
-    const val JSONPARSER_CHECK_DESCRIPTOR = """invoke-static {v%s}, $PATCHES_DESCRIPTOR/Block;->replaceJsonParserKey(Ljava/lang/String;)Ljava/lang/String;
-        move-result-object v%s"""
-
-    const val LINKS_DESCRIPTOR = "$PATCHES_DESCRIPTOR/Links;"
-    const val CUSTOM_FONT_DESCRIPTOR = "$PATCHES_DESCRIPTOR/customise/font/CustomFont;"
     const val DOWNLOAD_DESCRIPTOR = "$PATCHES_DESCRIPTOR/download"
-    const val ACTIONBAR_DESCRIPTOR = "$PATCHES_DESCRIPTOR/actionbar/ActionBarPatch;"
 
     const val OVERFLOW_MENU_BUTTON_CLASS = "$PATCHES_DESCRIPTOR/overflowMenuButton"
     const val ADD_REEL_BTN_OVERFLOW_MENU_BUTTON_CLASS = "$OVERFLOW_MENU_BUTTON_CLASS/reels/AddReelButton;"
@@ -70,4 +64,5 @@ object Constants {
 
     const val COMMENT_BUTTON_EXTENSION_CLASS = "${PATCHES_DESCRIPTOR}/comment"
     const val INSTANTS_DESCRIPTOR = "$PATCHES_DESCRIPTOR/instants"
+    const val SCROLL_BLOCKER_DESCRIPTOR = "$PATCHES_DESCRIPTOR/scroll/ScrollBlocker;"
 }

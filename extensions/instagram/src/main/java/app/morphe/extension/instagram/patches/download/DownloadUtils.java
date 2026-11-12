@@ -62,7 +62,6 @@ import app.morphe.extension.shared.ResourceType;
 import app.morphe.extension.shared.ResourceUtils;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.instagram.settings.ActivityHook;
-import app.morphe.extension.instagram.patches.Links;
 import app.morphe.extension.crimera.ObjectBrowser;
 import app.morphe.extension.crimera.downloader.MediaDownloader;
 import app.morphe.extension.crimera.downloader.DownloadMetadata;
@@ -628,7 +627,7 @@ public class DownloadUtils {
                     : takenAtSeconds * 1000L;
             request.metadata = new DownloadMetadata(
                     rootMediaData.getDescriptionText(),
-                    Links.generatePostLink(rootMediaData, postPosition),
+                    generatePostLink(rootMediaData, postPosition),
                     username,
                     uploadTimestampMillis
             );
@@ -973,11 +972,46 @@ public class DownloadUtils {
                 PikoUtils.toast(str("piko_external_downloader_package_name_not_found"));
                 return;
             }
-            String link = Links.generatePostLink(mediaObject, currentMediaIndex);
+            String link = generatePostLink(mediaObject, currentMediaIndex);
             PikoUtils.shareTextToPackageName(link, packageName);
         } catch (Exception e){
             PikoUtils.logger(e);
             Logger.printException(() -> "Error at externalDownloader", e);
         }
+    }
+
+    public static String generatePostLink(MediaData mediaData, int position) {
+        if (mediaData == null) return "";
+        try {
+            String postShortCode = mediaData.getShortcode();
+            app.morphe.extension.instagram.constants.PostType postType = mediaData.getPostType();
+
+            String shortTag = "p";
+            if (postType != null && postType.equals(app.morphe.extension.instagram.constants.PostType.REEL)) {
+                shortTag = "reel";
+            } else if (postType != null && postType.equals(app.morphe.extension.instagram.constants.PostType.STORY)) {
+                shortTag = "stories";
+                if (mediaData.getUserData() != null) {
+                    postShortCode = mediaData.getUserData().getUsername();
+                }
+            }
+
+            String link = String.format(Constants.INSTAGRAM_SHARE_LINK, shortTag, postShortCode);
+
+            if (postType != null && postType.equals(app.morphe.extension.instagram.constants.PostType.STORY)) {
+                String postID = mediaData.getPostID();
+                if (postID != null) link += postID;
+            } else if (postType != null && postType.equals(app.morphe.extension.instagram.constants.PostType.CAROUSEL)) {
+                link += "?img_index=" + (position + 1);
+            }
+            return link;
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+            return "";
+        }
+    }
+
+    public static String generatePostLink(Object mediaObject, int position) {
+        return generatePostLink(new MediaData(mediaObject), position);
     }
 }

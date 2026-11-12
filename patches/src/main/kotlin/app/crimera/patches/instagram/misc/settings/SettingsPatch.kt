@@ -11,19 +11,9 @@ import app.crimera.patches.instagram.entity.dialogbox.instagramDialogBoxEntity
 import app.crimera.patches.instagram.entity.instagramButton.instagramButtonEntity
 import app.crimera.patches.instagram.entity.profileinfo.profileInfoEntity
 import app.crimera.patches.instagram.entity.userdata.userDataEntity
-import app.crimera.patches.instagram.links.validateLinks.validateLinksPatch
-import app.crimera.patches.instagram.misc.actionBar.mainFeedActionBarButton.hideHomeActionButtonsPatch
-import app.crimera.patches.instagram.misc.actionBar.mainFeedActionBarButton.mainFeedActionBarButtonPatch
-import app.crimera.patches.instagram.misc.actionBar.userProfileActionBarButton.userProfileActionBarButtonPatch
-import app.crimera.patches.instagram.misc.buildExpiredPopup.removeBuildExpiredPopupPatch
-import app.crimera.patches.instagram.misc.dm.hideChatCallButtonsPatch
 import app.crimera.patches.instagram.misc.extension.hooks.instagramInitHook
 import app.crimera.patches.instagram.misc.extension.sharedExtensionPatch
 import app.crimera.patches.instagram.misc.hookFlags.hookFlagsPatch
-import app.crimera.patches.instagram.misc.notification.fixDirectNotificationActionCrashPatch
-import app.crimera.patches.instagram.misc.notification.fixNotificationRegistrationCrashPatch
-import app.crimera.patches.instagram.misc.userProfile.preserveUnknownFriendshipStatusPatch
-import app.crimera.patches.instagram.misc.userProfile.userProfileButtonPatch
 import app.crimera.patches.instagram.utils.Constants.ACTIVITY_SETTINGS_CLASS
 import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
 import app.crimera.patches.instagram.utils.Constants.CONSTANTS_DESCRIPTOR
@@ -107,19 +97,9 @@ val settingsPatch =
             nativeSettingsSwitchStylePatch,
             whitehatIndicatorPatch,
             settingsTaskRemovalPatch,
-            mainFeedActionBarButtonPatch,
-            hideHomeActionButtonsPatch,
-            hideChatCallButtonsPatch,
-            userProfileActionBarButtonPatch,
             userDataEntity,
-            userProfileButtonPatch,
             hookFlagsPatch,
-            fixNotificationRegistrationCrashPatch,
-            fixDirectNotificationActionCrashPatch,
-            validateLinksPatch,
             spoofSignaturePatch,
-            removeBuildExpiredPopupPatch,
-            preserveUnknownFriendshipStatusPatch,
             profileInfoEntity,
             instagramDialogBoxEntity,
             instagramButtonEntity,
@@ -288,18 +268,6 @@ val settingsPatch =
                     ${LOAD_FLAGS_DESCRIPTOR.format("load")}
                     invoke-static {}, $CONSTANTS_DESCRIPTOR/Constants;->load()V
                     """.trimIndent(),
-                )
-            }
-
-            // For welcome message.
-            MainFeedFragmentOnCreateFingerprint.let {
-                val contextResultIndex = it.instructionMatches.last().index
-                val contextRegister = it.instructionMatches.last().getInstruction<OneRegisterInstruction>().registerA
-
-                it.method.addInstruction(
-                    contextResultIndex + 1,
-                    "invoke-static/range {v$contextRegister .. v$contextRegister}, " +
-                        "$PATCHES_DESCRIPTOR/WelcomeMessage;->openWelcomeMessage(Landroid/content/Context;)V",
                 )
             }
         }

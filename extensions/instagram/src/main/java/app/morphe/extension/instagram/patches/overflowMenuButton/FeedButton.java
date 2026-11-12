@@ -23,14 +23,12 @@ import app.morphe.extension.shared.ResourceType;
 import app.morphe.extension.shared.ResourceUtils;
 import app.morphe.extension.crimera.ObjectBrowser;
 
-import app.morphe.extension.instagram.patches.Links;
 import app.morphe.extension.instagram.utils.Pref;
 import app.morphe.extension.instagram.settings.SettingsStatus;
 import app.morphe.extension.instagram.entity.Entity;
 import app.morphe.extension.instagram.entity.MediaData;
 import app.morphe.extension.instagram.constants.UI;
 import app.morphe.extension.instagram.patches.download.DownloadUtils;
-import app.morphe.extension.instagram.patches.feed.MoreOptionsOnPostPatch;
 import app.morphe.extension.instagram.settings.ActivityHook;
 
 import com.instagram.feed.media.mediaoption.MediaOption$Option;
@@ -49,9 +47,6 @@ public class FeedButton {
 
         if(SettingsStatus.downloadMedia){
             additionalButtonsList.add(MediaOption$Option.PIKO_DOWNLOAD);
-        }
-        if(SettingsStatus.moreOptionsOnPost){
-            additionalButtonsList.add(MediaOption$Option.PIKO_MORE_POST_OPTION);
         }
         if(SettingsStatus.downloadWithExternalDownloader){
             additionalButtonsList.add(MediaOption$Option.PIKO_EXTERNAL_DOWNLOADER);
@@ -106,10 +101,6 @@ public class FeedButton {
         return FeedButton.initOverflowButton("PIKO_DOWNLOAD", 500, UI.DRAWABLE_DOWNLOAD_ICON);
     }
 
-    public static MediaOption$Option morePostOptionOverflowButton(){
-        return FeedButton.initOverflowButton("PIKO_MORE_POST_OPTION", 501, UI.DRAWABLE_BLUB_ICON);
-    }
-
     public static MediaOption$Option debugOverflowButton(){
         return FeedButton.initOverflowButton("PIKO_DEBUG", 502, UI.DRAWABLE_DEBUG_ICON);
     }
@@ -135,9 +126,6 @@ public class FeedButton {
             if(Pref.downloadWithExternalDownloader()) {
                 addButton(MediaOption$Option.PIKO_EXTERNAL_DOWNLOADER, str("piko_download_with_external_downloader"), buttonAdderObject, buttonlist);
             }
-            if(Pref.moreOptionsOnPost()) {
-                addButton(MediaOption$Option.PIKO_MORE_POST_OPTION, str("piko_more_options"), buttonAdderObject, buttonlist);
-            }
         } catch (Exception e) {
             Logger.printException(() -> "Error at addReelButton",e);
         }
@@ -147,7 +135,6 @@ public class FeedButton {
         return (
                 pressedButton.equals(MediaOption$Option.PIKO_DEBUG) ||
                 (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD)) ||
-                (SettingsStatus.moreOptionsOnPost && pressedButton.equals(MediaOption$Option.PIKO_MORE_POST_OPTION)) ||
                 (SettingsStatus.downloadWithExternalDownloader && pressedButton.equals(MediaOption$Option.PIKO_EXTERNAL_DOWNLOADER))
         );
     }
@@ -159,9 +146,6 @@ public class FeedButton {
 
             } else if (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD)) {
                 DownloadUtils.showDownloadOptions(context, userSession, mediaObject, currentMediaIndex);
-
-            } else if (SettingsStatus.moreOptionsOnPost && pressedButton.equals(MediaOption$Option.PIKO_MORE_POST_OPTION)) {
-                MoreOptionsOnPostPatch.postMoreOptions(context, userSession, mediaObject, currentMediaIndex);
 
             } else if (SettingsStatus.downloadWithExternalDownloader && pressedButton.equals(MediaOption$Option.PIKO_EXTERNAL_DOWNLOADER)) {
                 DownloadUtils.externalDownloader(mediaObject,currentMediaIndex);
